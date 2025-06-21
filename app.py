@@ -1,8 +1,8 @@
 import streamlit as st
 import openai
-import io
+import tempfile
 
-st.title("EDITH: Voice Transcription Debug v3")
+st.title("EDITH: Whisper Transcription – Final Fix")
 
 # Load API key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -13,26 +13,21 @@ audio_file = st.file_uploader("Upload a voice recording", type=["wav", "mp3", "m
 if audio_file:
     st.write("✅ File received!")
     st.audio(audio_file)
-    st.write("📡 Beginning transcription...")
+    st.write("📡 Saving and sending to Whisper...")
 
     try:
-        # Read audio bytes
-        audio_bytes = audio_file.read()
+        # Save uploaded file to a temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".m4a") as temp_audio:
+            temp_audio.write(audio_file.read())
+            temp_audio_path = temp_audio.name
 
-        # Wrap in a subclassed BytesIO that forces a 'name' property
-        class NamedBytesIO(io.BytesIO):
-            def __init__(self, data, name):
-                super().__init__(data)
-                self.name = name
+        st.write(f"📁 Temp file path: {temp_audio_path}")
 
-        audio_buffer = NamedBytesIO(audio_bytes, audio_file.name)
-
-        st.write(f"📁 File name: {audio_file.name}")
-        st.write(f"📏 File size: {len(audio_bytes)} bytes")
-
+        # Send to Whisper
         with st.spinner("🔍 Transcribing your message..."):
-            transcript = openai.Audio.transcribe("whisper-1", audio_buffer)
-            user_text = transcript["text"]
+            with open(temp_audio_path, "rb") as f:
+                transcript = openai.Audio.transcribe("whisper-1", f)
+                user_text = transcript["text"]
 
         st.success("🧠 Transcription successful!")
         st.write(f"🗣️ You said: `{user_text}`")
