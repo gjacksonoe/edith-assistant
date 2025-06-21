@@ -1,4 +1,3 @@
+openai==0.28
 streamlit
-openai
-elevenlabs==0.2.3
-pydantic==1.10.12
+elevenlabs
