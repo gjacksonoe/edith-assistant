@@ -1,9 +1,9 @@
 import streamlit as st
 import openai
 
-st.title("EDITH: Voice Transcription Test")
+st.title("EDITH: Voice Transcription Debug")
 
-# 🔐 API key (must be in Streamlit secrets)
+# Load API key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Upload audio
@@ -12,10 +12,17 @@ audio_file = st.file_uploader("Upload a voice recording", type=["wav", "mp3", "m
 if audio_file:
     st.write("✅ File received!")
     st.audio(audio_file)
+    st.write("📡 Beginning transcription...")
 
-    # Transcribe using Whisper
-    with st.spinner("Transcribing..."):
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        user_text = transcript["text"]
+    try:
+        with st.spinner("🔍 Transcribing your message..."):
+            transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            user_text = transcript["text"]
 
-    st.write(f"🗣️ You said: `{user_text}`")
+        st.success("🧠 Transcription successful!")
+        st.write(f"🗣️ You said: `{user_text}`")
+
+    except Exception as e:
+        st.error("⚠️ Transcription failed.")
+        st.write("Error details:")
+        st.write(e)
