@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import io
 
-st.title("EDITH: Voice Transcription Debug")
+st.title("EDITH: Voice Transcription Debug v3")
 
 # Load API key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -16,10 +16,16 @@ if audio_file:
     st.write("📡 Beginning transcription...")
 
     try:
-        # Read the file into a buffer and give it a fake 'name'
+        # Read audio bytes
         audio_bytes = audio_file.read()
-        audio_buffer = io.BytesIO(audio_bytes)
-        audio_buffer.name = audio_file.name  # ← This fixes the crash
+
+        # Wrap in a subclassed BytesIO that forces a 'name' property
+        class NamedBytesIO(io.BytesIO):
+            def __init__(self, data, name):
+                super().__init__(data)
+                self.name = name
+
+        audio_buffer = NamedBytesIO(audio_bytes, audio_file.name)
 
         st.write(f"📁 File name: {audio_file.name}")
         st.write(f"📏 File size: {len(audio_bytes)} bytes")
