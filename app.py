@@ -1,5 +1,6 @@
 import streamlit as st
 import openai
+import io
 
 st.title("EDITH: Voice Transcription Debug")
 
@@ -15,10 +16,10 @@ if audio_file:
     st.write("📡 Beginning transcription...")
 
     try:
-        # Manually read the file into a buffer for Whisper
-        import io
+        # Read the file into a buffer and give it a fake 'name'
         audio_bytes = audio_file.read()
         audio_buffer = io.BytesIO(audio_bytes)
+        audio_buffer.name = audio_file.name  # ← This fixes the crash
 
         st.write(f"📁 File name: {audio_file.name}")
         st.write(f"📏 File size: {len(audio_bytes)} bytes")
